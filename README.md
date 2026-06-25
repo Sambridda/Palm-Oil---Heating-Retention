@@ -35,17 +35,64 @@ The objective was to design, size, and architect the automation logic for a raw 
 
 ## 2. Engineering Journey & Design Challenges
 
+### Scope Misalignment: Production Window Clarification
+
+The project initially proceeded under the assumption that the target throughput was 2 tonnes processed within a 4-hour window — a significantly more demanding brief than what was ultimately intended. At that stage, the VCH methodology had not yet been extended to account for latent heat during phase change, which caused the computed overall heat transfer coefficient ($U$) to appear unrealistically poor. The apparent shortfall prompted repeated proposals to introduce mechanical agitation (an impeller) to compensate, which the senior engineer consistently declined on practical and cost grounds.
+
+The misalignment was resolved through structured clarification: revisiting the original brief with targeted questions until the envisioned system — a daily throughput target, not a 4-hour batch — was confirmed unambiguously. This reframing immediately brought the thermal performance figures within acceptable bounds and removed the need for agitation entirely.
+
+**Takeaway:** Requirement ambiguity compounds downstream. Early, explicit clarification of the production window prevented a fundamentally over-specified design from proceeding to detailed engineering.
+
+---
+
+### Solar Loop Integration: Single-Pump Architecture
+
+The standard two-loop passive solar integration approach — where the solar circuit operates independently and dumps heat into the primary loop only when capacity permits — would have required a dedicated secondary circulation pump. To reduce capital cost and system complexity, the loop topology was redesigned so that a single high-pressure pump handles full circulation duties across both the solar collectors and the primary process loop.
+
+The trade-off is a heavier-duty pump selection and a significantly higher system head loss, both of which are documented and will be finalised once site plumbing and pipe routing are confirmed. The architectural logic underpinning this single-pump design is reflected in the Process Flow Diagram.
+
+---
+
+### Pipe & Coil Sizing: The A.A / A.B / B.A / B.B Case Matrix
+
+Cost pressure from the senior engineer introduced a preference for 1-inch NPS pipe at a stage when all sizing calculations had been developed around 1.5-inch. Reworking the analysis while the production throughput question was still unresolved made a definitive single-configuration recommendation premature. Rather than selecting arbitrarily, all four permutations of supply pipe NPS and coil bore NPS were calculated in full:
+
+| Case | Supply Pipe | Coil Bore |
+| :---: | :---: | :---: |
+| **A.A** | 1" NPS | 1" NPS |
+| **A.B** | 1" NPS | 1.5" NPS |
+| **B.A** | 1.5" NPS | 1" NPS |
+| **B.B** | 1.5" NPS | 1.5" NPS |
+
+Publishing all four cases in the proposal preserves full transparency for the client and allows the final pipe selection to be made on cost and availability grounds without requiring a redesign.
+
+---
+
 ### Challenging the Water-Side Velocity Assumption
 
 The initial hypothesis was that increasing water-side velocity through the submerged hydronic coils would be the primary lever for accelerating the melting phase. Applying the first-principles equations of the VCH Sizing Framework forced a critical course correction.
 
-**The impedance bottleneck.** Modeling the two-phase overall heat transfer coefficient ($U$) revealed that the outer oil-side thermal resistance accounts for over **95%** of total system impedance. Squeezing water faster through a 1-inch bore coil (Case A.B) produced a very high inner-surface heat transfer coefficient ($h_i = 19{,}594\ \text{W/m}^2\text{K}$), yet produced a negligible change in the overall melting rate — while adding hydraulic pump stress and accelerated wear for a mathematically redundant gain.
+**The impedance bottleneck.** Modelling the two-phase overall heat transfer coefficient ($U$) revealed that the outer oil-side thermal resistance accounts for over **95%** of total system impedance. Increasing water velocity through a 1-inch bore coil (Case A.B) produced a very high inner-surface coefficient ($h_i = 19{,}594\ \text{W/m}^2\text{K}$), yet yielded a negligible change in the overall melting rate — while adding hydraulic pump stress and accelerated wear for a mathematically redundant gain.
 
 ### Shifting to Algorithmic Design
 
 Once the solid-phase oil-side resistance was confirmed as an unyielding physical bottleneck, the design philosophy shifted from mechanical brute force to **algorithmic throughput recovery**. If a single tank's melting phase cannot be safely accelerated beyond its thermodynamic limit, total plant throughput must be reclaimed by orchestrating a smarter, time-staggered multi-tank queue.
 
 This led directly to the demand-driven "pull" automation architecture. Real-time volume- and temperature-weighted priority matrices ($S_\text{casual}$ and $S_\text{immediate}$) allow the PLC to continuously prepare, melt, and hold oil across all three 10 kL vessels in an overlapping sequence — bypassing single-tank cycle limitations and securing an uninterrupted downstream process stream.
+
+---
+
+### Ambient Data: Weighted-Average Design Philosophy
+
+Kathmandu's solar irradiance and ambient temperature data are not available from a single authoritative instrument record for this site. Rather than anchoring the design on a single "average good day" figure — which would leave the system undersized for adverse conditions — weighted annual averages were compiled across multiple sources and applied consistently throughout the sizing work. This methodology appears across solar reliability factors, ambient baseline temperature (18.1°C), and the tank priority scoring matrices ($S_\text{casual}$, $S_\text{immediate}$).
+
+The limitation is acknowledged: weighted averages characterise typical behaviour, not extremes. The worst-case 70°C HTF scenario in the validation table is the explicit hedge against adverse conditions.
+
+---
+
+### Tank Geometry & Manufacturability
+
+Initial vessel proportioning followed the aspect ratio guidance in the VCH Sizing Framework. Translating those proportions into manufacturable steel vessels — balancing height, diameter, conical cap geometry, plate utilisation, and weld seam minimisation — proved more iterative than the thermal calculations themselves. Once the senior engineer introduced a manufacturability constraint tied to standard plate dimensions, the detailed vessel geometry was handed to the team's mechanical engineer, who modelled the tanks in SolidWorks and confirmed material utilisation and weldability before the dimensions were locked.
 
 ---
 
@@ -111,13 +158,41 @@ The finalized engineering proposal was verified against primary operational para
 
 ## 7. Future Plan
 
-> *Future expansion and design optimisations to be added.*
+With the thermal sizing proposal complete, the next phase transitions the project from thermodynamic design into full electrical and controls engineering. Planned activities include:
+
+**Electrical Design**
+- Detailed electrical system design in AutoCAD, covering power distribution, protection coordination, and wiring layout strategies for the immersion array and pump drives.
+
+**Controls Architecture**
+- Discussion with the senior engineer to finalise the control philosophy — evaluating a PLC-based architecture against distributed individual controllers, and assessing the feasibility of PI control loops in place of hard on/off automation for improved stability and reduced thermal cycling.
+
+**Instrumentation & HMI**
+- Full sensor schedule: selection, specification, and placement of temperature, level, and flow instruments across all four tanks and the solar loop.
+- HMI design for operator visibility and manual override capability.
+
+**Hydraulics & Pump Selection**
+- Head loss calculations for the coil circuits and the single-pump solar/primary loop. Hand calculations have been initiated; finalisation is deferred until site plumbing routing and the pipe NPS selection are confirmed.
+- Pump selection based on the locked head loss and flow rate requirements.
 
 ---
 
 ## 8. My Contributions
 
-> *Personal project contributions, execution details, and internship focus areas to be added.*
+This project was undertaken as a Junior Automation Design Architect during an internship at MEPL, working under the direction of the senior project lead. The scope of personal contributions is as follows:
+
+**Thermal Sizing & Proposal Authorship**
+All thermal calculations, coil sizing, case matrix analysis (A.A / A.B / B.A / B.B), phase-change modelling, solar reliability analysis, and the full engineering proposal document were produced independently, grounded in the self-authored VCH Sizing Framework (2nd Ed.).
+
+**Process Architecture**
+The single-pump solar feedback loop topology — where the solar collectors and primary process circuit share one high-pressure pump rather than requiring a dedicated secondary pump — was independently conceived and designed. This PFD architecture has not yet been formally reviewed with the senior engineer and is pending discussion.
+
+**Tank Geometry (Collaborative)**
+Initial vessel proportions and aspect ratio estimates were produced as part of the thermal sizing work. Detailed manufacturable geometry and SolidWorks verification were completed by the team's mechanical engineer, who refined the dimensions to minimise plate waste and weld seam count.
+
+**PFD vs. P&ID**
+The Process Flow Diagram was produced as part of this proposal. The team's mechanical engineer has produced a separate P&ID; the two documents are currently not fully aligned and reconciliation is in progress.
+
+**Note:** The project is ongoing. The contributions documented here reflect the proposal stage. Electrical design, instrumentation, and controls work are planned for subsequent phases.
 
 ---
 
