@@ -4,6 +4,12 @@
 
 Grounded in the self-authored **VCH Sizing Framework (2nd Ed.)**, the system coordinates a passive solar thermal loop with an auxiliary electric immersion array through PLC automation to deliver demand-driven, high-efficiency process operations.
 
+> **Document History**
+> | Version | Date | Status |
+> | :--- | :--- | :--- |
+> | Technical Proposal I | Prior to June 2026 | Archived — superseded |
+> | Technical Proposal II | June 29, 2026 | Current — For Review |
+
 ---
 
 ## Table of Contents
@@ -16,7 +22,8 @@ Grounded in the self-authored **VCH Sizing Framework (2nd Ed.)**, the system coo
 6. [Headline Results & Validation Metrics](#6-headline-results--validation-metrics)
 7. [Future Plan](#7-future-plan)
 8. [My Contributions](#8-my-contributions)
-9. [Appendix: Engineering Notebook](#appendix-engineering-notebook)
+9. [Changelog: Proposal I → Proposal II](#9-changelog-proposal-i--proposal-ii)
+10. [Appendix: Engineering Notebook](#appendix-engineering-notebook)
 
 ---
 
@@ -65,6 +72,8 @@ Cost pressure from the senior engineer introduced a preference for 1-inch NPS pi
 | **B.B** | 1.5" NPS | 1.5" NPS |
 
 Publishing all four cases in the proposal preserves full transparency for the client and allows the final pipe selection to be made on cost and availability grounds without requiring a redesign.
+
+> **Proposal II update:** The four-case supply/coil matrix has been resolved into a **single standardised supply pipe** (1-inch Schedule 40 CPVC throughout the loop), eliminating the supply pipe as an independent variable. The coil bore remains a design variable and is now evaluated across 1-inch, 1.25-inch, 1.5-inch, and 2-inch NPS in SS 304 Schedule 10S. See [Changelog](#9-changelog-proposal-i--proposal-ii) for detail.
 
 ---
 
@@ -135,17 +144,38 @@ Two independent PLC calculation blocks evaluate plant state and drive the stagge
 - **$S_\text{casual}$ Block** — Manages solar thermal energy distribution to tanks requiring non-urgent pre-heating.
 - **$S_\text{immediate}$ Block** — Prioritises auxiliary electric backup (36 kW) to the active processing tank when a downstream demand signal ($\delta$) is high, preventing line starvation.
 
+### Coil Sizing: Inverted Design Logic (New in Proposal II)
+
+Proposal I fixed the coil at its geometric ceiling (90 m for T10) and asked what throughput results. Proposal II inverts this: a heat-duty target $Q_\text{target} = Q_\text{batch} + Q_\text{loss,max} = 9.17\ \text{kW}$ is defined from the mandate and worst-case standing loss, and the **minimum coil length required** is solved in closed form via the ε-NTU method. This converts unused thermal margin directly into a pipe-length (and cost) saving — the recommended design point (1.5-inch bore, L ≈ 56 m) cuts the original 90 m specification by approximately 38%.
+
 ---
 
 ## 5. The VCH Sizing Framework
 
 This system is a full-scale industrial deployment of the **VCH Sizing Framework (2nd Edition)** — a methodology authored specifically for submerged hydronic coil thermal systems. The project served as a definitive verification platform, confirming that unifying coil heat transfer modeling with multi-phase thermal boundary calculations produces highly predictable, field-resilient industrial designs.
 
+**DOI:** [10.5281/zenodo.21009246](https://doi.org/10.5281/zenodo.21009246)
+
 ---
 
 ## 6. Headline Results & Validation Metrics
 
 The finalized engineering proposal was verified against primary operational parameters and absolute worst-case ambient scenarios.
+
+### Proposal II Results (Current)
+
+| Performance Metric | Design Target | Primary (75°C HTF) | Worst-Case (70°C HTF) |
+| :--- | :---: | :---: | :---: |
+| **Safety margin vs. 2 t/day (single tank)** | 1.0× | **3.0×** (at design point) | **3.0×** (by construction) |
+| **3-tank staggered capacity** | ≥ 2.0 t/day | **6.0 t/day** | **6.0 t/day** |
+| **Required coil length (1.5" bore)** | ≤ 90 m | **48.3 m** | **55.6 m** |
+| **Solar Loop Thermal Coverage (ETC)** | Maximise | **61.46%** offset | Emergency electric override |
+| **System Thermal Bottleneck** | Mitigate | Oil-side impedance (>95%) | Oil-side impedance (>95%) |
+| **T5 coil length required (1.5" bore)** | — | **3.2 m** of 65 m ceiling | **4.1 m** of 65 m ceiling |
+
+### Archived: Proposal I Results
+
+> The table below documents the headline figures from Technical Proposal I and is retained for traceability. These values were produced under a different sizing philosophy (coil fixed at geometric ceiling; throughput solved from given length) and a two-variable supply/coil pipe matrix. They have been superseded by Proposal II.
 
 | Performance Metric | Design Target | Primary (75°C HTF) | Worst-Case (70°C HTF) |
 | :--- | :---: | :---: | :---: |
@@ -181,7 +211,7 @@ With the thermal sizing proposal complete, the next phase transitions the projec
 This project was undertaken as a Junior Automation Design Architect during an internship at MEPL, working under the direction of the senior project lead. The scope of personal contributions is as follows:
 
 **Thermal Sizing & Proposal Authorship**
-All thermal calculations, coil sizing, case matrix analysis (A.A / A.B / B.A / B.B), phase-change modelling, solar reliability analysis, and the full engineering proposal document were produced independently, grounded in the self-authored VCH Sizing Framework (2nd Ed.).
+All thermal calculations, coil sizing, case matrix analysis (A.A / A.B / B.A / B.B in Proposal I; unified 1-inch supply with 1–2 inch coil bore sweep in Proposal II), phase-change modelling, solar reliability analysis, and the full engineering proposal documents were produced independently, grounded in the self-authored VCH Sizing Framework (2nd Ed.).
 
 **Process Architecture**
 The single-pump solar feedback loop topology — where the solar collectors and primary process circuit share one high-pressure pump rather than requiring a dedicated secondary pump — was independently conceived and designed. This PFD architecture has not yet been formally reviewed with the senior engineer and is pending discussion.
@@ -193,6 +223,53 @@ Initial vessel proportions and aspect ratio estimates were produced as part of t
 The Process Flow Diagram was produced as part of this proposal. The team's mechanical engineer has produced a separate P&ID; the two documents are currently not fully aligned and reconciliation is in progress.
 
 **Note:** The project is ongoing. The contributions documented here reflect the proposal stage. Electrical design, instrumentation, and controls work are planned for subsequent phases.
+
+---
+
+## 9. Changelog: Proposal I → Proposal II
+
+This section documents the technical changes between the two proposal revisions for traceability.
+
+### 9.1 Supply Pipe Simplification
+
+**Proposal I** evaluated two supply pipe sizes (1-inch and 1.5-inch NPS) as an independent design variable, producing a 2×2 case matrix (A.A, A.B, B.A, B.B) for the combination of supply bore and coil bore.
+
+**Proposal II** standardises on a **single 1-inch Schedule 40 CPVC supply pipe** throughout the entire loop. This eliminates the supply pipe as a design variable without any material effect on U-value or NTU performance — the oil-side resistance dominates at >95% of total impedance regardless of supply pipe selection. The case matrix collapses from four supply/coil combinations to a single-axis coil bore sweep (1", 1.25", 1.5", 2").
+
+### 9.2 Coil Sizing Methodology: Inverted Design Logic
+
+**Proposal I** fixed the coil at its maximum geometric length ($L_\text{max} = 90\ \text{m}$ for T10) and solved for the resulting throughput capacity.
+
+**Proposal II** inverts this: the minimum coil length required to meet a defined heat-duty target is solved in closed form. The target is:
+
+$$Q_\text{target} = Q_\text{batch} + Q_\text{loss,max} = 4.30 + 4.87 = 9.17\ \text{kW}$$
+
+where $Q_\text{batch}$ is the average power needed to melt 2 t of palm oil over 24 hours, and $Q_\text{loss,max}$ is the conservative worst-case standing loss at the 75°C PLC high-limit. Using the ε-NTU closed-form inversion for a Cr = 0 heat exchanger, the required lengths are:
+
+| Coil bore | $L_\text{required}$ at 75°C drive | $L_\text{required}$ at 70°C drive | % of 90 m ceiling (worst case) |
+| :---: | :---: | :---: | :---: |
+| 1-inch | 69.4 m | 80.1 m | 89% |
+| 1.25-inch | 55.1 m | 63.6 m | 71% |
+| **1.5-inch** | **48.3 m** | **55.6 m** | **62%** |
+| 2-inch | 38.8 m | 44.7 m | 50% |
+
+**Recommended design point:** 1.5-inch coil at L ≈ 56 m — a 38% reduction from the original 90 m specification.
+
+### 9.3 Melt Time and Safety Factor Basis
+
+**Proposal I** reported single-tank safety factors of 3.63× (primary) and 2.42× (worst case) derived from the ratio of actual coil output (at 90 m) to the 2 t/day minimum requirement.
+
+**Proposal II** sizes to exactly the daily mandate floor (24-hour melt time for 2 t at $Q_\text{batch}$), so the single-tank margin against the mandate is 1.0× by construction at the coil design point. The 3× system-level margin is recovered from running all three T10 tanks in a staggered sequence (3 × 2 t = 6 t/day). Actual single-tank performance will exceed the design floor whenever the tank is below its 75°C high-limit — which is most of the melt cycle.
+
+### 9.4 T5 Coil Sizing (Quantified)
+
+**Proposal I** identified T5 as thermally over-specified and noted that a duty-cycle loop or mixing valve would be required, but did not quantify the degree of over-specification.
+
+**Proposal II** quantifies it explicitly: even the smallest bore (1-inch) requires only **≈ 5.8 m** of coil (against a 65 m geometric ceiling — under 9% utilisation) to guarantee the 60°C process target. The recommended 1.5-inch bore requires only 4.1 m at the 70°C worst-case drive. This confirms that T5 is not capacity-limiting under any evaluated scenario.
+
+### 9.5 DOI Update
+
+The VCH Sizing Framework DOI cited in Proposal II has been updated to **10.5281/zenodo.21009246**. Earlier references to DOI 10.5281/zenodo.15579395 corresponded to a prior release of the framework document.
 
 ---
 
